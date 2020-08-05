@@ -1,0 +1,325 @@
+<!DOCTYPE HTML>
+<html>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Balista</title>
+  <style>
+    body {font-family: arial;}
+    h1 {font-family: arial; font-size: 14; color: #777777;}
+    input[type=text] {width:40px; 
+      border: 2px dotted #999;
+       border-radius: 0;
+      -webkit-appearance: none;
+    }
+    .button1 {
+      position: absolute;
+      left: 812px; 
+      top: 70px;
+     }
+    .graf1{
+      position: absolute;
+      left: 2px; 
+      top: 70px;
+    }
+    .graf2{
+      position: absolute;
+      left: 2px; 
+      top: 490px;
+    }
+    .graf3{
+      position: absolute;
+      left: 2px; 
+      top: 900px;
+    }
+
+  </style>
+ <script src="./js/canvas.js"></script> 
+  <script>
+////////////////////// global vars
+   var canvas1;
+   var canvas2;
+   var canvas3;
+   var ctx1;
+   var ctx2;
+   var ctx3;
+   var zoomx1=1;
+   var zoomy1=1;
+   var zoomy2=200;
+   var zoomy3=10000;
+   var sizex; //after load=canvas1.width;
+   var sizey; //after load=canvas1.height;
+   var stepx=10; //
+   var stepy=10; //
+   var shiftx=10;
+   var shifty=10;
+   var l=15;
+   var h=256;
+//   var k=1;
+   var a=18.0;
+   var b=0;
+   var x=0.1;
+   var y=1.1;
+   var d=600;
+   a=d/(2*Math.sqrt(h));
+
+///// global function
+   function setcell(){
+     document.getElementById("zoomx1").value=zoomx1;
+     document.getElementById("zoomy1").value=zoomy1;
+     document.getElementById("stepx").value=stepx;
+     document.getElementById("stepy").value=stepy;
+     document.getElementById("shiftx").value=shiftx;
+     document.getElementById("shifty").value=shifty;
+     document.getElementById("l").value=l*10;
+     document.getElementById("h").value=h*10;
+     document.getElementById("a").value=d/(2*Math.sqrt(h));
+     document.getElementById("d").value=d*10;
+   }
+
+   function resetcell(){
+     zoomx1=parseInt(document.getElementById("zoomx1").value,10);
+     zoomy1=parseInt(document.getElementById("zoomy1").value,10);
+     stepx=parseInt(document.getElementById("stepx").value,10);
+     stepy=parseInt(document.getElementById("stepy").value,10);
+     shiftx=parseInt(document.getElementById("shiftx").value,10);
+     shifty=parseInt(document.getElementById("shifty").value,10);
+     l=parseInt(document.getElementById("l").value,10)/10;
+     h=parseInt(document.getElementById("h").value,10)/10;
+//     a=parseInt(document.getElementById("a").value,10);
+     d=parseInt(document.getElementById("d").value,10)/10;
+     a=d/(2*Math.sqrt(h));
+   }
+
+   function outgrid(){
+     ctx1.beginPath();
+     ctx1.strokeStyle = "rgb(50,50,255)";//#0000ff";
+     ctx1.moveTo(shiftx  ,0);
+     ctx1.lineTo(shiftx ,sizey);
+     ctx1.moveTo(0,    sizey-shifty);
+     ctx1.lineTo(sizex,sizey-shifty);
+     ctx1.stroke();
+     ctx1.beginPath();
+     ctx1.strokeStyle = "rgb(200,200,200)";//#0000ff";
+     for (var i=shiftx; i>0; i-=stepx*zoomx1){
+       ctx1.moveTo(i,0);
+       ctx1.lineTo(i,sizey);
+     }
+     for (var i=shiftx; i < sizex; i+=stepx*zoomx1){
+       ctx1.moveTo(i,0);
+       ctx1.lineTo(i,sizey);
+     }
+     for (var i=shifty; i>0; i-=stepy*zoomy1){
+       ctx1.moveTo(0,sizey-shifty+i);
+       ctx1.lineTo(sizex,sizey-shifty+i);
+     }
+     for (var i=shifty; i < sizey; i+=stepy*zoomy1){
+       ctx1.moveTo(0,    sizey-i);
+       ctx1.lineTo(sizex,sizey-i);
+     }
+     ctx1.stroke();
+   }
+
+   function outgrid2(){
+     ctx2.beginPath();
+     ctx2.strokeStyle = "rgb(50,50,255)";//#0000ff";
+     ctx2.moveTo(0  ,0);
+     ctx2.lineTo(0 ,sizey);
+     ctx2.moveTo(0,    sizey);
+     ctx2.lineTo(sizex,sizey);
+     ctx2.stroke();
+
+     ctx2.beginPath();
+     ctx2.strokeStyle = "rgb(200,200,255)";//#0000ff";
+     for (var i=0; i<sizey; i+=zoomy2*(Math.PI/16)){
+       ctx2.fillText(Math.round((i/zoomy2)*180/Math.PI), 1, sizey-i); //out TEXT 
+       ctx2.moveTo(0,i);
+       ctx2.lineTo(sizex,i);
+     }
+     ctx2.stroke();
+
+     ctx2.beginPath();
+     ctx2.strokeStyle = "rgb(50,50,255)";//#0000ff";
+     for (var i=sizey; i>0; i-=zoomy2*(Math.PI/4)){
+       ctx2.moveTo(0,i);
+       ctx2.lineTo(sizex,i);
+     }
+     ctx2.stroke();
+   }
+
+   function outgrid3(){
+     ctx3.beginPath();
+     ctx3.strokeStyle = "rgb(50,50,255)";//#0000ff";
+     ctx3.moveTo(0  ,0);
+     ctx3.lineTo(0 ,sizey);
+     ctx3.moveTo(0,    sizey);
+     ctx3.lineTo(sizex,sizey);
+     ctx3.stroke();
+
+
+     ctx3.beginPath();
+     ctx3.strokeStyle = "rgb(00,00,255)";//#0000ff";
+
+     for (var i=0.1; i < sizey ; i=i+ zoomy3 * (Math.PI/16) ) {
+console.log(i+" sizey="+zoomy3*(Math.PI/16));
+//       ctx3.fillText(Math.round((i/zoomy3)*180/Math.PI), 1, sizey-i); //out TEXT 
+//       ctx3.moveTo(0,i);
+//       ctx3.lineTo(sizex,i);
+     }
+     ctx3.stroke();
+   }
+   function out1(){ 
+     if (!cls.checked){
+       ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+       ctx2.clearRect(0, 0, canvas1.width, canvas1.height);
+       ctx3.clearRect(0, 0, canvas1.width, canvas1.height);
+     }
+     resetcell();
+     outgrid();
+     outgrid2();
+     outgrid3();
+
+
+     var r=parseFloat(Math.sqrt(parseInt(h),10));
+     st=l+.1;
+     end=l+2*r*a;
+     maxy=0;
+     maxy2=0;
+     maxy3=0;
+///////////////////////////////////////////
+     function f(x){
+       var X= ((x-l)/a -  r);
+       return (h-(X*X));
+     }
+
+     for (x=st; x<end; x+=.1 ){ ///////////////////////////////////////////////////////
+
+       ctx1.beginPath();
+       ctx2.beginPath();
+       ctx3.beginPath();
+       ctx1.strokeStyle = "rgb(200,00,00)";//#0000ff";
+       ctx2.strokeStyle = "rgb(200,00,00)";//#0000ff";
+       ctx3.strokeStyle = "rgb(200,00,00)";//#0000ff";
+
+       y=f(x);
+       y4=y/x;
+       y2=Math.atan2(y,x);
+       y3=y2/x;
+
+       if (y>maxy) maxy=y;
+       if (y2>maxy2) maxy2=y2;
+       if (y3>maxy3) maxy3=y3;
+       ctx1.arc(x*zoomx1+shiftx, sizey-shifty-y*zoomy1, .5, 0, 2 * Math.PI);
+       ctx2.arc(x-l, sizey-(zoomy2*y2),.5, 0, 2 * Math.PI);
+       ctx3.arc(x-l, sizey-(zoomy3*y3),.5, 0, 2 * Math.PI);
+
+       ctx1.stroke();
+       ctx2.stroke();
+       ctx3.stroke();
+     /////////////////
+     ctx2.beginPath();
+     ctx2.strokeStyle = "rgb(255,200,200)";//#7777ff";
+     ctx2.arc(x-l, sizey-(zoomy2*y4),.5, 0, 2 * Math.PI);
+     ctx2.stroke();
+
+     }
+
+     //console.log(sizey-maxy2*zoomy2);
+
+
+     ctx2.beginPath();
+     ctx2.strokeStyle = "#F99";
+
+    for (x=st; x<end; x+=.1 ){   ctx2.arc(x-l, sizey-(zoomy2*y4),.5, 0, 2 * Math.PI);}
+     ctx2.stroke();
+
+
+     ctx1.fillStyle = "#777";
+     ctx1.strokeStyle = "#777";
+     ctx1.font = "30pt Arial";
+     ctx1.fillText("distance="+parseInt(x-l)*10+"m h="+maxy*10+"m", shiftx+l, 50); //out TEXT 
+
+     ctx1.beginPath();
+     ctx1.strokeStyle = "rgb(00,200,00)"; //green 1-st line (left)
+     ctx1.moveTo(l+shiftx,sizey);
+     ctx1.lineTo(l+shiftx,0);
+     ctx1.stroke();
+
+     ctx1.beginPath();
+     ctx1.strokeStyle = "rgb(00,200,00)";//2-nd green line
+     ctx1.moveTo(shiftx+x,sizey); // 
+     ctx1.lineTo(shiftx+x,0); //
+
+     ctx1.moveTo(shiftx+l+(end-st)/2,sizey-shifty); // central greenline
+     ctx1.lineTo(shiftx+l+(end-st)/2,sizey-shifty-maxy); //
+
+     ctx1.moveTo(0,sizey-shifty-maxy); // horizontal max h
+     ctx1.lineTo(sizex,sizey-shifty-maxy); //
+
+     ctx2.beginPath();
+     ctx2.strokeStyle = "rgb(00,200,00)"; //green 1-st line (left)
+     ctx2.moveTo(0,sizey-maxy2*zoomy2); // horizontal max h
+     ctx2.lineTo(sizex,sizey-maxy2*zoomy2); //
+     ctx2.fillText(maxy2*180/Math.PI,180,sizey-maxy2*zoomy2-4);
+     ctx2.stroke();
+
+     ctx3.beginPath();
+     ctx3.strokeStyle = "rgb(00,200,00)"; //green 1-st line (left)
+     ctx3.moveTo(0,sizey-maxy3*zoomy3); // horizontal max h
+     ctx3.lineTo(sizex,sizey-maxy3*zoomy3); //
+     ctx3.fillText(maxy3*zoomy3,180,sizey-maxy3*zoomy3-4);
+     ctx3.stroke();
+
+     ctx1.stroke();
+     ctx1.beginPath();
+
+   }
+
+   window.onload = function() {
+console.log()
+     canvas1 = document.getElementById("canvas1");
+     canvas2 = document.getElementById("canvas2");
+     canvas3 = document.getElementById("canvas3");
+     var cls = document.getElementById("cls");
+
+     ctx1 = canvas1.getContext("2d");
+     ctx2 = canvas2.getContext("2d");
+     ctx3 = canvas3.getContext("2d");
+     sizex=canvas1.width;
+     sizey=canvas1.height;
+     setcell();
+     out1();
+
+   }
+  </script>
+ </head>
+ <body>
+  <h1>BALISTA:</h1>
+  <div class='button1'>
+   <p><input type=text id='zoomx1' onchange='out1();'> Zoom X</p>
+   <p><input type=text id='zoomy1' onchange='out1();'> Zoom Y</p>
+   <p><input type=text id='stepx' onchange='out1();'> Step grid X</p>
+   <p><input type=text id='stepy' onchange='out1();'> Step grid Y</p>
+   <p><input type=text id='shiftx' onchange='out1();'> Shift X Y</p>
+   <p><input type=text id='shifty' onchange='out1();'> Shift Y</p>
+   <p><input type=text id='l' onchange='out1();'>(m) L </p>
+   <p><input type=text id='h' onchange='out1();'>(m) h - height</p>
+   <p><input type=text id='d' onchange='out1();'>(m) d - distance</p>
+   <p><input type=text readonly id='a' onchange='out1();'> <font color="#0000FF"> k - coefficient</font></p>
+   <p><input type=checkbox id='cls' onchange='' value=1> Not clear screen<p>
+  </div>
+
+  <canvas id='canvas1' width='800' height='400' class='graf1'>
+    <p>Unsuported browser</p>
+  </canvas>
+
+  <canvas id='canvas2' width='800' height='400' class='graf2'>
+    <p>Unsuported browser</p>
+  </canvas>
+
+  <canvas id='canvas3' width='800' height='400' class='graf3'>
+    <p>Unsuported browser</p>
+  </canvas>
+
+
+ </body>
+</html>
