@@ -2,7 +2,8 @@
 <html>
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Balista</title>
+  <meta name="author" content="denis.kudriakov@gmail.com">
+  <title>Balistica</title>
   <style>
     body {font-family: arial;}
     h1 {font-family: arial; font-size: 14; color: #777777;}
@@ -14,7 +15,21 @@
   </style>
  <script src="./js/canvas.js"></script> 
   <script>
-////////////////////// global vars
+//denis.kudriakov@gmail.com
+//20.08.20
+    ////////////////////// global vars
+   var shiftx=0;
+   var shifty=0;
+   var shifty2=200;
+   var zoomx1=.1;
+   var zoomy1=.1;
+   var zoomy2=3;
+   var stepx=100;
+   var stepy=100;
+   var time=20;
+   var tzg=1; //time zoom grid
+   var padlina;
+
    var r2g=180/Math.PI; //radian to gradus
    var canvas1;
    var canvas2;
@@ -22,61 +37,88 @@
    var ctx1;
    var ctx2;
    var ctx3;
-   var zoomx1=1;
-   var zoomy1=1;
-   var zoomy2=200;
-   var zoomy3=100;
-   var sizex; //after load=canvas1.width;
-   var sizey; //after load=canvas1.height;
-   var stepx=10; //
-   var stepy=10; //
-   var shiftx=10;
-   var shifty=10;
-   var time=120;
-   var l=15;
-   var h=200;
-//   var k=1;
-   var a=18.0;
-   var b=0;
+   var h=2000;
+   var d=6000;
+ 
+   var a=0; //in line
+   var b=150; //from ine
+
+   var k=1.0;
    var x=0.1;
-   var y=1.1;
-   var d=600;
-   var number;
+   var y=1.0;
 
+   var number;1
 
-   a=d/(2*Math.sqrt(h));
+   k=d/(2*Math.sqrt(h));
  
 
 ///// global function
    function setcell(){
      document.getElementById("zoomx1").value=zoomx1;
      document.getElementById("zoomy1").value=zoomy1;
+     document.getElementById("zoomy2").value=zoomy2;
      document.getElementById("stepx").value=stepx;
      document.getElementById("stepy").value=stepy;
      document.getElementById("shiftx").value=shiftx;
      document.getElementById("shifty").value=shifty;
-     document.getElementById("l").value=l*10;
-     document.getElementById("h").value=h*10;
-     document.getElementById("a").value=d/(2*Math.sqrt(h));
-     document.getElementById("d").value=d*10;
+     document.getElementById("a").value=a;
+     document.getElementById("b").value=b;
+     document.getElementById("h").value=h;
+     document.getElementById("k").value=d/(2*Math.sqrt(h));
+     document.getElementById("d").value=d;
      document.getElementById("time").value=time;
+     document.getElementById("timezoom").value=tzg;
    }
 
    function resetcell(){
-     zoomx1=parseInt(document.getElementById("zoomx1").value,10);
-     zoomy1=parseInt(document.getElementById("zoomy1").value,10);
+     zoomx1=parseFloat(document.getElementById("zoomx1").value,10);
+     zoomy1=parseFloat(document.getElementById("zoomy1").value,10);
+     zoomy2=parseFloat(document.getElementById("zoomy2").value,10);
      stepx=parseInt(document.getElementById("stepx").value,10);
      stepy=parseInt(document.getElementById("stepy").value,10);
      shiftx=parseInt(document.getElementById("shiftx").value,10);
      shifty=parseInt(document.getElementById("shifty").value,10);
-     l=parseInt(document.getElementById("l").value,10)/10;
-     h=parseInt(document.getElementById("h").value,10)/10;
-//     a=parseInt(document.getElementById("a").value,10);
-     d=parseInt(document.getElementById("d").value,10)/10;
+     b=parseInt(document.getElementById("b").value,10);
+     h=parseInt(document.getElementById("h").value,10);
+     a=parseInt(document.getElementById("a").value,10);
+     d=parseInt(document.getElementById("d").value,10);
      time=parseInt(document.getElementById("time").value,10);
-     a=d/(2*Math.sqrt(h));
+     tgz=document.getElementById("timezoom").value;
+     k=d/(2*Math.sqrt(h));
    }
+   pst = new  Array();
+   tmp = new  Array();
+   
+   pst[1]=[ 0.15, .1, 3.6, 100, 100,0,0,0,1788,150,4629,38,1]; //82mm
+   pst[2]=[ 0.15, .1, 3.6, 100, 100,0,0,0,2723,150,4695,47,1];      //120mm
 
+   pst[3]=[ 0.1, .1, 3.6, 100, 100,0,0,0,150,150,5500,47,1];      //120mm
+   pst[4]=[ 0.1, .1, 3.6, 100, 100,0,0, 4500,150,150,6000,47,1];      //120mm
+
+   pst[5]=[.1, .1, 3.6,  100,  100,0,0, 0   ,8000,0,22000,38,1];
+//
+//console.log(pst);
+   function preset(n){
+
+//console.log(pst[1][1]);
+
+     zoomx1=pst[n][0];
+     zoomy1=pst[n][1];
+     zoomy2=pst[n][2];
+     stepx=pst[n][3];
+     stepy=pst[n][4];
+     shiftx=pst[n][5];
+     shifty=pst[n][6];
+     b=pst[n][7];
+     h=pst[n][8];
+     a=pst[n][9];
+     d=pst[n][10];
+     time=pst[n][11];
+     tgz=pst[n][12];
+     setcell();
+     out1();
+   }
+   
    function outgrid(){
      ctx1.beginPath();
      ctx1.strokeStyle = "rgb(50,50,255)";//#0000ff";
@@ -104,211 +146,276 @@
        ctx1.lineTo(sizex,sizey-i);
      }
      ctx1.stroke();
-   }
 
-   function outgrid2(){
+     ///   grid in time 
      ctx2.beginPath();
      ctx2.strokeStyle = "rgb(50,50,255)";//#0000ff";
-     ctx2.moveTo(0  ,0);
-     ctx2.lineTo(0 ,sizey);
-     ctx2.moveTo(0,    sizey);
-     ctx2.lineTo(sizex,sizey);
+     ctx2.moveTo(shiftx  ,0);
+     ctx2.lineTo(shiftx ,sizey);
+     ctx2.moveTo(0,    sizey-shifty);
+     ctx2.lineTo(sizex,sizey-shifty);0
      ctx2.stroke();
-
      ctx2.beginPath();
-     ctx2.strokeStyle = "rgb(200,200,255)";//#0000ff";
-     for (var i=0; i<sizey; i+=zoomy2*(Math.PI/16)){
-       ctx2.fillText(Math.round((i/zoomy2)*r2g), 1, sizey-i); //out TEXT 
-       ctx2.moveTo(0,i);
-       ctx2.lineTo(sizex,i);
+     ctx2.strokeStyle = "rgb(200,220,220)";//#0000ff";
+
+//     for (var i=shiftx; i>0; i-=stepx*zoomx1){
+//       ctx2.moveTo(i,0);
+//       ctx2.lineTo(i,sizey);
+//     }
+
+     for (var i=shiftx; i < sizex; i+=stepx*zoomx1){ //vertikal grid
+       ctx2.moveTo(i,0);
+       ctx2.lineTo(i,sizey);
+     }
+
+//     for (var i=shifty; i>0; i-=stepy*zoomy1){
+//       ctx2.moveTo(0,sizey-shifty+i);
+//       ctx2.lineTo(sizex,sizey-shifty+i);
+//     }
+
+     for (var i=shifty; i < sizey; i+=stepy*zoomy1){ // horizontal
+       ctx2.moveTo(0,    sizey-i);
+       ctx2.lineTo(sizex,sizey-i);
      }
      ctx2.stroke();
 
-     ctx2.beginPath();
-     ctx2.strokeStyle = "rgb(50,50,255)";//#0000ff";
-     for (var i=sizey; i>0; i-=zoomy2*(Math.PI/4)){
-       ctx2.moveTo(0,i);
-       ctx2.lineTo(sizex,i);
+     if (timegrid.checked){ // time grid
+       ctx2.beginPath();     
+       ctx2.strokeStyle = "rgb(250,0,85)";//#0000ff";
+       for (var i=0; i<=1+d*zoomx1; i+=zoomx1*d/time) {
+         ctx2.moveTo(i,    0);
+         ctx2.lineTo(i,sizey);
+       }
+       ctx2.stroke();
+     }
+
+     ctx2.beginPath(); //greadus scale
+     ctx2.strokeStyle = "rgb(250,50,55)";//#0000ff";
+     for (var i=0; i<sizey; i+=45) {
+       ctx2.moveTo(0, sizey-i-shifty2);
+       ctx2.lineTo(sizex, sizey-i-shifty2);
+       ctx2.moveTo(0, sizey+i-shifty2);
+       ctx2.lineTo(sizex, sizey+i-shifty2);
+       ctx2.font = "8pt Arial";
+     ctx2.fillText((Math.round(10*(i/zoomy2-180/zoomy2)))/10, sizex-100, sizey - i-10); //out TEXT 
      }
      ctx2.stroke();
-   }
 
-   function outgrid3(){
+     ctx2.beginPath(); //zero-line
+     ctx2.strokeStyle = "rgb(0,0,20)";//#0000ff";
+       ctx2.moveTo(0,sizey-shifty2);
+       ctx2.lineTo(sizex,sizey-shifty2);
+     ctx2.stroke();
+
+
+///////////////// canvas 3
+     ///   grid in time 
      ctx3.beginPath();
      ctx3.strokeStyle = "rgb(50,50,255)";//#0000ff";
-     ctx3.moveTo(0  ,200);
-     ctx3.lineTo(sizex ,200);
-
-//     ctx3.moveTo(0,    sizey);
-//     ctx3.lineTo(sizex,sizey);
+     ctx3.moveTo(shiftx  ,0);
+     ctx3.lineTo(shiftx ,sizey);
+     ctx3.moveTo(0,    sizey-shifty);
+     ctx3.lineTo(sizex,sizey-shifty);0
      ctx3.stroke();
-
-
      ctx3.beginPath();
-     ctx3.strokeStyle = "rgb(00,00,255)";//#0000ff";
-
-     for (var i=0.1; i < sizey ; i=i+ zoomy3 * (Math.PI/16) ) {
-//       ctx3.fillText(Math.round((i/zoomy3)*r2g), 1, sizey-i); //out TEXT 
-//       ctx3.moveTo(0,i);
-//       ctx3.lineTo(sizex,i);
+     ctx3.strokeStyle = "rgb(200,220,220)";//#0000ff";
+     for (var i=shiftx; i < sizex; i+=stepx*zoomx1){ //vertikal grid
+       ctx3.moveTo(i,0);
+       ctx3.lineTo(i,sizey);
+     }
+     for (var i=shifty; i < sizey; i+=stepy*zoomy1){ // horizontal
+       ctx3.moveTo(0,    sizey-i);
+       ctx3.lineTo(sizex,sizey-i);
      }
      ctx3.stroke();
-   }
-   function out1(){ 
-     if (!cls.checked){
-       ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
-       ctx2.clearRect(0, 0, canvas1.width, canvas1.height);
-       ctx3.clearRect(0, 0, canvas1.width, canvas1.height);
-       number++;
-     } else number=1;
+     if (timegrid.checked){ // time grid
+       ctx3.beginPath();     
+       ctx3.strokeStyle = "rgb(250,0,85)";//#0000ff";
+       for (var i=0; i<=1+d*zoomx1; i+=zoomx1*d/time) {
+         ctx3.moveTo(i,    0);
+         ctx3.lineTo(i,sizey);
+       }
+       ctx3.stroke();
+     }
 
+     ctx3.beginPath(); //greadus scale
+     ctx3.strokeStyle = "rgb(250,50,55)";//#0000ff";
+     for (var i=0; i<sizey; i+=45) {
+       ctx3.moveTo(0, sizey-i-shifty2);
+       ctx3.lineTo(sizex, sizey-i-shifty2);
+       ctx3.moveTo(0, sizey+i-shifty2);
+       ctx3.lineTo(sizex, sizey+i-shifty2);
+       ctx3.font = "8pt Arial";
+//     ctx3.fillText(Math.round(10*i*zoomy2)/10-180, sizex-100, sizey - i-10); //out TEXT 
+//     ctx3.fillText((Math.round(10*i/zoomy2)/10)-180/zoomy2, sizex-100, sizey - i-10); //out TEXT 
+      ctx3.fillText((Math.round(10*(i/zoomy2-180/zoomy2)))/10, sizex-100, sizey - i-10); //out TEXT 
+
+     }
+     ctx3.stroke();
+
+     ctx3.beginPath(); //zero-line
+     ctx3.strokeStyle = "rgb(0,0,20)";//#0000ff";
+     ctx3.moveTo(0,sizey-shifty2);
+     ctx3.lineTo(sizex,sizey-shifty2);
+     ctx3.stroke();
+   }
+
+
+   function out1(){ 
+     ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+     ctx2.clearRect(0, 0, canvas1.width, canvas1.height);
+     ctx3.clearRect(0, 0, canvas1.width, canvas1.height);
      resetcell();
      setcell();
-
      outgrid();
-     outgrid2();
-     outgrid3();
-
-
      var r=parseFloat(Math.sqrt(parseInt(h),10));
-     st=l+.1;
-     end=l+2*r*a;
-     tst=0;
-     tend=180;
+     st=.1;
+     end=2*r*k;
      maxy=0;
-     maxy2=0;
-     maxy3=0;
 ///////////////////////////////////////////
      function f(x){
-       var X= ((x-l)/a -  r);
+       var X= ((x)/k -  r);
        return (h-(X*X));
      }
      var y2=0;
      var y3=0;
-     var deltax=.1;
+     var deltax=1;
      var pi2= 2 * Math.PI;
      var stepx2=(end-st)/time;
      var deltax2=0;
      var tmpdx=0;
      var deltaf1=0.00;
      var padlina=0.00;
+     el = new  Array();
+     az = new  Array();
+     var cntw=0;
+     var y1=.1;
+     var y2=.1;
+     var yy1=.1;
+     var yy2=.1;
+     var yyy1=.1;
+     var yyy2=.1;
+     var deltaf1=0.0;
+     var deltay1=0.0;
+     var deltay2=0.0;
+     var deltaaz=0.0;
+     var deltael=0.0;
+     
+
      for (x=st; x<end; x+=deltax ){ ///////////////////////////////////////////////////////
-       ctx1.beginPath();
-       ctx2.beginPath();
-       ctx3.beginPath();
-       ctx1.strokeStyle = "rgb(200,00,00)";//#0000ff";
-       ctx2.strokeStyle = "rgb(200,00,00)";//#0000ff";
-       ctx3.strokeStyle = "rgb(200,00,00)";//#0000ff";
-       
-       deltaf1=y;
-       deltay=y2; //prev y2
        y=f(x);                     //  <-------------------------------------
-       y2=Math.atan2(y,x);
-       deltay=y2-deltay;
        deltaf1=y-deltaf1;
-       y3=Math.atan2(deltay*r2g,deltax);
-       y4=y/x;
 
-       if  (y > maxy)  maxy=y;
-       if  (y2 > maxy2) maxy2=y2;
-       if  (y3 > maxy3) maxy3=y3;
+       if (b) {
+         if (a<0){
+          if (x>a)  y1=Math.atan2(-a-x,b);
+          else y1=Math.atan2(x+a,b);
+         }
+         else y1=Math.atan2(x+a,b)-Math.atan2(a,b); 
+       }
+       else  y1=0; //azimuth
+       y2=Math.atan2(y,Math.sqrt((x+a)*(x+a)+b*b)); //elevation angle
+       deltay1=y1-deltay1;
+       deltay2=y2-deltay2;
 
-       ctx1.arc(x*zoomx1+shiftx, sizey-shifty-y*zoomy1, .5, 0,pi2);
-       ctx2.arc(x-l, sizey-(zoomy2*y2),.5, 0, pi2);
-       ctx3.arc(x-l, sizey-(zoomy3*y3)-200,.5, 0, pi2);
-//       ctx3.arc(x-l, 175,.5, 0, pi2);
-//       if (y3<25) ctx3.arc(x-l, sizey-(zoomy3*y3)-1,1, 0, pi2);
-       ctx1.stroke();
-       ctx2.stroke();
-       ctx3.stroke();
-     /////////////////
-       ctx2.beginPath();
-       ctx2.strokeStyle = "rgb(255,200,200)";//#7777ff";
-       ctx2.arc(x-l, sizey-(zoomy2*y4),.5, 0, 2 * Math.PI);
-       ctx2.stroke();
-        
-       ctx3.beginPath();
-       ctx3.strokeStyle = "rgb(200,255,200)";//#7777ff";
-       ctx3.arc((x-l), sizey-(zoomy3*25/r2g)-200,.5, 0, pi2);
-       ctx3.arc((x-l), sizey-(-zoomy3*25/r2g)-200,.5, 0, pi2);
-       ctx3.stroke();
       
-outgrid3();
+       ctx1.beginPath();                     //	
+       ctx1.strokeStyle = "rgb(200,00,00)";//#0000ff";            
+       ctx1.arc(x*zoomx1+shiftx, sizey-shifty-y*zoomy1, .5, 0,pi2);
+       ctx1.stroke();
 
-/////////////
+       ctx2.beginPath();  // az angle
+       ctx2.strokeStyle = "rgb(0,255,0)";//#00ff00";  
+       ctx2.arc(x*zoomx1+shiftx, sizey-shifty2-y1*r2g*zoomy2, .5, 0,pi2);
+       ctx2.stroke();
+
+
+       ctx2.beginPath();  // el angle
+       ctx2.strokeStyle = "rgb(00,00,200)";//#00ff00";  
+       ctx2.arc(x*zoomx1+shiftx, sizey-shifty2-y2*r2g*zoomy2, .5, 0,pi2);
+       ctx2.stroke();
+
+/////////////////// ang-speed
+
+       yy1=deltay1/ (time/(d*deltax));
+       yy2=deltay2/ (time/(d*deltax));
+
+       deltaaz=yy1-deltaaz;
+       deltael=yy2-deltael;
+
+       ctx3.beginPath();  // az-speed
+       if (yy1*r2g>25 || yy1*r2g<-25 ) {
+         ctx3.strokeStyle = "rgb(0,100,0)"; 
+         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy1*r2g*zoomy2, .5, 0,pi2);
+       }
+       else ctx3.strokeStyle = "rgb(00,200,00)";//#00ff00";  
+       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy1*r2g*zoomy2, .5, 0,pi2);
+       ctx3.stroke();
+
+       ctx3.beginPath();  // el-speed
+       if (yy2*r2g>25 || yy2*r2g<-25 ) {
+         ctx3.strokeStyle = "rgb(0,0,77)";
+         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy2*r2g*zoomy2, .5, 0,pi2);
+       } 
+       else ctx3.strokeStyle = "rgb(00,0,255)";//#00ff00";  
+       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy2*r2g*zoomy2, .5, 0,pi2);
+       ctx3.stroke();
+
+//////////// acscelleration
+
+
+       yyy1=Math.abs(deltaaz/ (time/(d*deltax)));
+       yyy2=Math.abs(deltael/ (time/(d*deltax)));
+
+       ctx3.beginPath();  // az-acs
+       if (yyy1*r2g>25 || yyy1*r2g<-25 ) {
+         ctx3.strokeStyle = "rgb(0,100,0)"; 
+         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy1*r2g*zoomy2, 1, 0,pi2);
+       }
+       else ctx3.strokeStyle = "rgb(00,200,00)";//#00ff00";  
+       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy1*r2g*zoomy2, 1, 0,pi2);
+       ctx3.stroke();
+
+       ctx3.beginPath();  // el-acs
+       if (yyy2*r2g>25 || yyy2*r2g<-25 ) {
+         ctx3.strokeStyle = "rgb(0,0,77)";
+         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy2*r2g*zoomy2, 1, 0,pi2);
+       } 
+       else ctx3.strokeStyle = "rgb(00,0,255)";//#00ff00";  
+       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy2*r2g*zoomy2, 1, 0,pi2);
+       ctx3.stroke();
+
+       az[cntw]=y2;
+       el[cntw]=y3;;
+       cntw++;
 ///////////
        padlina+=Math.sqrt(deltax*deltax+deltaf1*deltaf1);
-       tmpdx++;
 
-/////////////
-///////////
-/////////////
-///////////
+       deltaf1=y;
+       deltay1=y1;
+       deltay2=y2;
+       deltaaz=yy1;
+       deltael=yy2;
 
+     } // end for
+     div4padlina.innerHTML="dlina dugi: "+Math.round(padlina*1000)/1000 + "m.   Middle speed fly:" + padlina/time +"m/sec<div><font color=#00ff00>Azimuth </font><font color=#0000ff>Elevation</font></div>";
+
+     var tztmp=cntw/time;
+     var cnt=0;
+     
+     for (i=0;i<cntw;i++){ //out speed az & el
+       if (++cnt<tztmp) {
+         deltay1+=az[i];
+         deltay2+=el[i];
+       }
+       else {
+         cnt=0;
+//      ctx2.beginPath();  
+//       ctx2.strokeStyle = "rgb(00,00,200)";//#00ff00";  
+//       ctx2.arc(x*zoomx1+shiftx, sizey-shifty2-y2*r2g*zoomy2, .5, 0,pi2);
+//       ctx2.stroke();         
+       }
      }
-
-div4padlina.innerHTML="dlina dugi: "+Math.round(padlina*10000)/1000 + "m.   Middle speed fly:" + padlina*10/time +"m/sec";
-       maxy2=maxy2;// * r2g;//*180/Math.PI;
-
-
-     ctx2.beginPath();
-     ctx2.strokeStyle = "#F99";
-
-    for (x=st; x<end; x+=.1 ){   ctx2.arc(x-l, sizey-(zoomy2*y4),.5, 0, 2 * Math.PI);}
-     ctx2.stroke();
-
-
-     ctx1.fillStyle = "#777";
-     ctx1.strokeStyle = "#777";
-//     ctx1.font = "30pt Arial";
-//     ctx1.fillText("distance="+parseInt(x-l)*10+"m h="+maxy*10+"m", shiftx+l, 50); //out TEXT 
-
-     ctx1.beginPath();
-     ctx1.strokeStyle = "rgb(00,200,00)"; //green 1-st line (left)
-     ctx1.moveTo(l+shiftx,sizey);
-     ctx1.lineTo(l+shiftx,0);
-     ctx1.stroke();
-
-     ctx1.beginPath();
-     ctx1.strokeStyle = "rgb(00,200,00)";//2-nd green line
-     ctx1.moveTo(shiftx+x,sizey); // 
-     ctx1.lineTo(shiftx+x,0); //
-
-     ctx1.moveTo(shiftx+l+(end-st)/2,sizey-shifty); // central greenline
-     ctx1.lineTo(shiftx+l+(end-st)/2,sizey-shifty-maxy); //
-
-     ctx1.moveTo(0,sizey-shifty-maxy); // horizontal max h
-     ctx1.lineTo(sizex,sizey-shifty-maxy); //
-
-     ctx2.beginPath();
-     ctx2.strokeStyle = "rgb(00,200,00)"; //green 1-st line (left)
-     ctx2.moveTo(0,sizey-maxy2*zoomy2); // horizontal max h
-     ctx2.lineTo(sizex,sizey-maxy2*zoomy2); //
-
-
-     ctx2.fillText(Math.round(100*maxy2*r2g)/100,180,sizey-maxy2*zoomy2-4);
-     ctx2.stroke();
-
-
-
-//     ctx3.beginPath();
-//     ctx3.strokeStyle = "rgb(00,200,00)"; //green 1-st line (left)
-//     ctx3.moveTo(0,sizey-maxy3*zoomy3); // horizontal max h
-//     ctx3.lineTo(sizex,sizey-maxy3*zoomy3); //
-//     ctx3.fillText(Math.round(100*maxy3*r2g)/100,180,sizey-maxy3*zoomy3-4);
-//     ctx3.stroke();
-
-//     ctx3.beginPath();
-//     ctx3.strokeStyle = "rgb(00,00,00)"; //green 1-st line (left)
-//     ctx3.moveTo(0,sizey-25*zoomy3); // horizontal aurmax 
-//     ctx3.lineTo(sizex,sizey-25*zoomy3); //
-//console.log(maxy3+"-------"+zoomy3*maxy3);
-//     ctx3.stroke();
-
-
-     ctx1.stroke();
-     ctx1.beginPath();
-
    }
 
    window.onload = function() {
@@ -317,6 +424,9 @@ div4padlina.innerHTML="dlina dugi: "+Math.round(padlina*10000)/1000 + "m.   Midd
      canvas3 = document.getElementById("canvas3");
      div4padlina=document.getElementById("padlina");
      var cls = document.getElementById("cls");
+     var timegrid = document.getElementById("timegrid");
+     var timezoom = document.getElementById("timezoom");
+
      ctx1 = canvas1.getContext("2d");
      ctx2 = canvas2.getContext("2d");
      ctx3 = canvas3.getContext("2d");
@@ -336,13 +446,31 @@ div4padlina.innerHTML="dlina dugi: "+Math.round(padlina*10000)/1000 + "m.   Midd
    <p><input type=text id='stepy' onchange='out1();'> Step grid Y</p>
    <p><input type=text id='shiftx' onchange='out1();'> Shift X Y</p>
    <p><input type=text id='shifty' onchange='out1();'> Shift Y</p>
-   <p><input type=text id='l' onchange='out1();'>(m) L </p>
-   <p><input type=text id='h' onchange='out1();'>(m) h - height</p>
-   <p><input type=text id='d' onchange='out1();'>(m) d - distance</p>
-   <p><input type=text id='time' onchange='out1();'>(sec) Time in sec</p>
-   <p><input type=text readonly id='a' onchange='out1();'> <font color="#0000FF"> k - coefficient</font></p>
+   <p><input type=text id='a' onchange='document.getElementById("rangea").value=this.valueout1();'>(m) a (вдоль линии выстрела)<input id=rangea type=range min=-6000 max=6000 value=0 step=50 onchange='document.getElementById("a").value=this.value;out1();'></p>
+   <p><input type=text id='b' onchange='document.getElementById("rangeb").value=this.value;out1();'>(m) b (перпендикулярно)<input id=rangeb  type=range min=0 max=6000 value=150 step=50 onchange='document.getElementById("b").value=this.value;out1();'></p>
+   <p><input type=text id='h' onchange='document.getElementById("rangeh").value=this.value;out1();'>(m) h - height <input id=rangeh  type=range min=0 max=10000 value=2000 step=100 onchange='document.getElementById("h").value=this.value;out1();'></p>
+   <p><input type=text id='d' onchange='document.getElementById("ranged").value=this.value;out1();'>(m) d - distance <input id=ranged  type=range min=0 max=12000 value=6000 step=100 onchange='document.getElementById("d").value=this.value;out1();'></p>
+   <p><input type=text id='time' onchange='out1();'>(sec) Time in sec</p><p> <input type=checkbox id='timegrid' onchange='out1();' value='1'> timegrid
+      <input type=text id='timezoom' onchange='out1();' value='100'>(sec) grid in sec</p>
+   <p><input type=text readonly id='k' onchange='out1();'> <font color="#0000FF"> k - coefficient</font></p>
    <p><input type=checkbox id='cls' onchange='' value=1> Not clear screen<p>
 <div id='padlina'> </div>
+   <p><input type=text value=1 id='zoomy2' onchange='document.getElementById("rangezoomy2").value=this.value;out1();'>
+ZOOM Y2-3
+  <input id=rangezoomy2  type=range min=.2 max=10 value=1 step=.2 onchange='document.getElementById("zoomy2").value=this.value;out1();'>
+</p>
+<p><div id=lablepresets>Presets:</div></p>
+<p>
+<button value=1 onclick="preset(1);" onmouseover='document.getElementById("lablepresets").innerHTML="мина82мм ЭТАЛОН"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>1</button>
+<button value=2 onclick="preset(2);" onmouseover='document.getElementById("lablepresets").innerHTML="мина120мм ЭТАЛОН"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>2</button>
+<button value=3 onclick="preset(3);" onmouseover='document.getElementById("lablepresets").innerHTML="55гр150м150"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>3</button>
+<button value=4 onclick="preset(4);" onmouseover='document.getElementById("lablepresets").innerHTML="мина82мм ЭТАЛОН"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>4</button>
+<button value=5 onclick="preset(5);" onmouseover='document.getElementById("lablepresets").innerHTML="мина82мм ЭТАЛОН"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>5</button>
+<button value=6 onclick="preset(6);" onmouseover='document.getElementById("lablepresets").innerHTML="мина82мм ЭТАЛОН"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>6</button>
+<button value=7 onclick="preset(7);" onmouseover='document.getElementById("lablepresets").innerHTML="мина82мм ЭТАЛОН"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>7</button>
+<button value=8 onclick="preset(8);" onmouseover='document.getElementById("lablepresets").innerHTML="мина82мм ЭТАЛОН"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>8</button>
+
+</p>
   </div>
 
   <canvas id='canvas1' width='800' height='400' class='graf1'>
@@ -356,7 +484,6 @@ div4padlina.innerHTML="dlina dugi: "+Math.round(padlina*10000)/1000 + "m.   Midd
   <canvas id='canvas3' width='800' height='400' class='graf3'>
     <p>Unsuported browser</p>
   </canvas>
-
 
  </body>
 </html>
