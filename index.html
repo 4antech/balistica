@@ -9,6 +9,7 @@
     h1 {font-family: arial; font-size: 14; color: #777777;}
     input[type=text] {width:40px; border: 2px dotted #999; border-radius: 0; -webkit-appearance: none;}
     .button1 { position: absolute; left: 812px; top: 10px; }
+    .button2 { position: absolute; left: 812px; top: 1000px; }
     .graf1{ position: absolute; left: 2px; top: 70px; }
     .graf2{ position: absolute; left: 2px; top: 490px;}
     .graf3{ position: absolute; left: 2px; top: 900px;}
@@ -26,6 +27,7 @@
    var zoomx1=.1;
    var zoomy1=.1;
    var zoomy2=3;
+   var zoomy3=3;
    var stepx=100;
    var stepy=100;
    var time=20;
@@ -39,17 +41,22 @@
    var ctx1;
    var ctx2;
    var ctx3;
+   var azsp;
+   var azus;
+   var elsp;
+   var elus;
+
+
+
    var h=2000;
-   var d=6000;
- 
+   var d=6000; 
    var a=0; //in line
    var b=150; //from ine
-
    var k=1.0;
    var x=0.1;
    var y=1.0;
-   var curpres=0;
 
+   var curpres=0;
    var number;1
 
    k=d/(2*Math.sqrt(h));
@@ -61,6 +68,7 @@
      document.getElementById("zoomx1").value=zoomx1;
      document.getElementById("zoomy1").value=zoomy1;
      document.getElementById("zoomy2").value=zoomy2;
+     document.getElementById("zoomy3").value=zoomy3;
      document.getElementById("stepx").value=stepx;
      document.getElementById("stepy").value=stepy;
      document.getElementById("shiftx").value=shiftx;
@@ -78,6 +86,7 @@
      zoomx1=parseFloat(document.getElementById("zoomx1").value,10);
      zoomy1=parseFloat(document.getElementById("zoomy1").value,10);
      zoomy2=parseFloat(document.getElementById("zoomy2").value,10);
+     zoomy3=parseFloat(document.getElementById("zoomy3").value,10);
      stepx=parseInt(document.getElementById("stepx").value,10);
      stepy=parseInt(document.getElementById("stepy").value,10);
      shiftx=parseInt(document.getElementById("shiftx").value,10);
@@ -251,9 +260,7 @@
        ctx3.moveTo(0, sizey+i-shifty2);
        ctx3.lineTo(sizex, sizey+i-shifty2);
        ctx3.font = "8pt Arial";
-//     ctx3.fillText(Math.round(10*i*zoomy2)/10-180, sizex-100, sizey - i-10); //out TEXT 
-//     ctx3.fillText((Math.round(10*i/zoomy2)/10)-180/zoomy2, sizex-100, sizey - i-10); //out TEXT 
-      ctx3.fillText((Math.round(10*(i/zoomy2-180/zoomy2)))/10, sizex-100, sizey - i-10); //out TEXT 
+      ctx3.fillText((Math.round(10*(i/zoomy3-180/zoomy3)))/10, sizex-100, sizey - i-10); //out TEXT 
 
      }
      ctx3.stroke();
@@ -326,7 +333,7 @@ console.log('------------');
          }
          else y1=Math.atan2(x+a,b)-Math.atan2(a,b); 
        }
-       else  y1=0; //azimuth
+       else y1=0; //azimuth
        y2=Math.atan2(y,Math.sqrt((x+a)*(x+a)+b*b)); //elevation angle
        deltay1=y1-deltay1;
        deltay2=y2-deltay2;
@@ -362,45 +369,44 @@ console.log('------------');
        deltael=yy2-deltael;
 
        ctx3.beginPath();  // az-speed
-       if (yy1*r2g>25 || yy1*r2g<-25 ) {
+       if (azsp.checked &(yy1*r2g>25 || yy1*r2g<-25 )) {
          ctx3.strokeStyle = "rgb(0,100,0)"; 
-         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy1*r2g*zoomy2, .5, 0,pi2);
+         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy1*r2g*zoomy3, .5, 0,pi2);
        }
        else ctx3.strokeStyle = "rgb(00,200,00)";//#00ff00";  
-       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy1*r2g*zoomy2, .5, 0,pi2);
+       if (azsp.checked) ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy1*r2g*zoomy3, .5, 0,pi2);
        ctx3.stroke();
 
        ctx3.beginPath();  // el-speed
-       if (yy2*r2g>25 || yy2*r2g<-25 ) {
+       if (elsp.checked &(yy2*r2g>25 || yy2*r2g<-25) ) {
          ctx3.strokeStyle = "rgb(0,0,77)";
-         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy2*r2g*zoomy2, .5, 0,pi2);
+         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy2*r2g*zoomy3, .5, 0,pi2);
        } 
        else ctx3.strokeStyle = "rgb(00,0,255)";//#00ff00";  
-       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy2*r2g*zoomy2, .5, 0,pi2);
+       if (elsp.checked)       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy2*r2g*zoomy3, .5, 0,pi2);
        ctx3.stroke();
 
 //////////// acscelleration
-
 
        yyy1=Math.abs(deltaaz/ (time/(d*deltax)));
        yyy2=Math.abs(deltael/ (time/(d*deltax)));
 
        ctx3.beginPath();  // az-acs
-       if (yyy1*r2g>25 || yyy1*r2g<-25 ) {
+       if (azus.checked & (yyy1*r2g>25 || yyy1*r2g<-25 )) {
          ctx3.strokeStyle = "rgb(0,100,0)"; 
-         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy1*r2g*zoomy2, 1, 0,pi2);
+         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy1*r2g*zoomy3, 1, 0,pi2);
        }
        else ctx3.strokeStyle = "rgb(00,200,00)";//#00ff00";  
-       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy1*r2g*zoomy2, 1, 0,pi2);
+       if (azus.checked)       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy1*r2g*zoomy3, 1, 0,pi2);
        ctx3.stroke();
 
        ctx3.beginPath();  // el-acs
-       if (yyy2*r2g>25 || yyy2*r2g<-25 ) {
+       if (elus.checked & (yyy2*r2g>25 || yyy2*r2g<-25 )) {
          ctx3.strokeStyle = "rgb(0,0,77)";
-         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy2*r2g*zoomy2, 1, 0,pi2);
+         ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy2*r2g*zoomy3, 1, 0,pi2);
        } 
        else ctx3.strokeStyle = "rgb(00,0,255)";//#00ff00";  
-       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy2*r2g*zoomy2, 1, 0,pi2);
+       if (elus.checked) ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy2*r2g*zoomy3, 1, 0,pi2);
        ctx3.stroke();
 
        az[cntw]=y2;
@@ -408,19 +414,17 @@ console.log('------------');
        cntw++;
 ///////////
        padlina+=Math.sqrt(deltax*deltax+deltaf1*deltaf1);
-
        deltaf1=y;
        deltay1=y1;
        deltay2=y2;
        deltaaz=yy1;
        deltael=yy2;
-
      } // end for
+
      div4padlina.innerHTML="dlina dugi: "+Math.round(padlina*1000)/1000 + "m.   Middle speed fly:" + padlina/time +"m/sec<div><font color=#00ff00>Azimuth </font><font color=#0000ff>Elevation</font></div>";
 
      var tztmp=cntw/time;
      var cnt=0;
-     
      for (i=0;i<cntw;i++){ //out speed az & el
        if (++cnt<tztmp) {
          deltay1+=az[i];
@@ -428,7 +432,6 @@ console.log('------------');
        }
        else cnt=0;
      }
-
      if (z){ // dop traetorii
        var artemp=0;
        if (z==2 || z==5)  artemp=etalon120;
@@ -449,20 +452,15 @@ console.log('------------');
          }
          else  y1=0; //azimuth
          y2=Math.atan2(y,Math.sqrt((x+a)*(x+a)+b*b)); //elevation angle
-
-console.log(x+" "+b);
+//console.log(x+" "+b);
          ctx2.beginPath();  // az angle
          ctx2.strokeStyle = "rgb(0,33,0)";//#00ff00";  
          ctx2.arc(x*zoomx1+shiftx, sizey-shifty2-y1*r2g*zoomy2, 1, 0,pi2);
          ctx2.stroke();
-
-
          ctx2.beginPath();  // el angle
          ctx2.strokeStyle = "rgb(00,00,33)";//#00ff00";  
          ctx2.arc(x*zoomx1+shiftx, sizey-shifty2-y2*r2g*zoomy2, 1, 0,pi2);
          ctx2.stroke();
-
-
        }
      }
 //console.log(etalon82[tmp-1][1]*1000);
@@ -477,6 +475,10 @@ console.log(x+" "+b);
      var cls = document.getElementById("cls");
      var timegrid = document.getElementById("timegrid");
      var timezoom = document.getElementById("timezoom");
+     azsp = document.getElementById("azsp");
+     azus = document.getElementById("azus");
+     elsp = document.getElementById("elsp");
+     elus = document.getElementById("elus");
 
      ctx1 = canvas1.getContext("2d");
      ctx2 = canvas2.getContext("2d");
@@ -491,14 +493,14 @@ console.log(x+" "+b);
  <body>
   <h1>BALISTA:</h1>
   <div class='button1'>
-   <p><input type=text id='zoomx1' onchange='out1(curpres);'> Zoom X</p>
+   <p><input type=text id='zoomx1' onchange='document.getElementById("rangezoomx1").value=this.value;out1(curpres);'> Zoom X</p>
    <p><input type=text id='zoomy1' onchange='out1(curpres);'> Zoom Y</p>
    <p><input type=text id='stepx' onchange='out1(curpres);'> Step grid X</p>
    <p><input type=text id='stepy' onchange='out1(curpres);'> Step grid Y</p>
    <p><input type=text id='shiftx' onchange='out1(curpres);'> Shift X Y</p>
    <p><input type=text id='shifty' onchange='out1(curpres);'> Shift Y</p>
-   <p><input type=text id='a' onchange='document.getElementById("rangea").value=this.valueout1(curpres);'>(m) a (вдоль линии выстрела)<input id=rangea type=range min=-6000 max=6000 value=0 step=50 onchange='document.getElementById("a").value=this.value;out1(curpres);'></p>
-   <p><input type=text id='b' onchange='document.getElementById("rangeb").value=this.value;out1(curpres);'>(m) b (перпендикулярно)<input id=rangeb  type=range min=0 max=6000 value=150 step=50 onchange='document.getElementById("b").value=this.value;out1(curpres);'></p>
+   <p><input type=text id='a' onchange='document.getElementById("rangea").value=this.valueout1(curpres);'>a (m)<input id=rangea type=range min=-6000 max=6000 value=0 step=50 onchange='document.getElementById("a").value=this.value;out1(curpres);'>(вдоль линии выстрела)</p>
+   <p><input type=text id='b' onchange='document.getElementById("rangeb").value=this.value;out1(curpres);'>b (m)<input id=rangeb  type=range min=0 max=6000 value=150 step=50 onchange='document.getElementById("b").value=this.value;out1(curpres);'>(перпендикулярно)</p>
    <p><input type=text id='h' onchange='document.getElementById("rangeh").value=this.value;out1(curpres);'>(m) h - height <input id=rangeh  type=range min=0 max=10000 value=2000 step=100 onchange='document.getElementById("h").value=this.value;out1(curpres);'></p>
    <p><input type=text id='d' onchange='document.getElementById("ranged").value=this.value;out1(curpres);'>(m) d - distance <input id=ranged  type=range min=0 max=12000 value=6000 step=100 onchange='document.getElementById("d").value=this.value;out1(curpres);'></p>
    <p><input type=text id='time' onchange='out1(curpres);'>(sec) Time in sec</p><p> <input type=checkbox id='timegrid' onchange='out1(curpres);' value='1'> timegrid
@@ -507,9 +509,8 @@ console.log(x+" "+b);
    <p><input type=checkbox id='cls' onchange='' value=1> Not clear screen<p>
 <div id='padlina'> </div>
    <p><input type=text value=1 id='zoomy2' onchange='document.getElementById("rangezoomy2").value=this.value;out1(curpres);'>
-ZOOM Y2-3
-  <input id=rangezoomy2  type=range min=.2 max=10 value=1 step=.2 onchange='document.getElementById("zoomy2").value=this.value;out1(curpres);'>
-</p>
+ZOOM Y2 <input id=rangezoomy2  type=range min=.2 max=10 value=1 step=.2 onchange='document.getElementById("zoomy2").value=this.value;out1(curpres);'>
+   </p>
 <p><div id=lablepresets>Presets:</div></p>
 <p>
 <button value=1 onclick="preset(1);" onmouseover='document.getElementById("lablepresets").innerHTML="мина82мм ЭТАЛОН"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>1</button>
@@ -522,6 +523,22 @@ ZOOM Y2-3
 <button value=8 onclick="preset(8);" onmouseover='document.getElementById("lablepresets").innerHTML="мина82мм ЭТАЛОН"' onmouseout='document.getElementById("lablepresets").innerHTML="Presets:"'>8</button>
 
 </p>
+  </div>
+  <div class='button2'>
+    <p>
+ZOOM X <input id=rangezoomx1  type=range min=.1 max=10 value=1 step=.1 onchange='document.getElementById("zoomx1").value=this.value;out1(curpres);'>
+</p><p>      <input type=text value=1 id='zoomy3' onchange='document.getElementById("rangezoomy3").value=this.value;out1(curpres);'>
+ZOOM Y3
+  <input id=rangezoomy3  type=range min=.1 max=10 value=1 step=.1 onchange='document.getElementById("zoomy3").value=this.value;out1(curpres);'>
+</p>
+    <font color=#006600>
+      <p>Азимутальыне<input type=checkbox id='azsp' onchange='out1(curpres)' value=1 checked>  скорость
+      <input type=checkbox id='azus' onchange='out1(curpres)' value=1 checked> <b>Ускорение</b><p>
+    </font>
+    <font color=#000066>
+      <p>Уголоместные<input type=checkbox id='elsp' onchange='out1(curpres)' value=1 checked>  скорость
+      <input type=checkbox id='elus' onchange='out1(curpres)' value=1 checked> <b>Ускорение</b><p>
+    </font>
   </div>
 
   <canvas id='canvas1' width='800' height='400' class='graf1'>
