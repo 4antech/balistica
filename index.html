@@ -322,7 +322,10 @@
      var deltaaz=0.0;
      var deltael=0.0;
      var tmp=0;
-
+     var maxspaz=0;
+     var maxspel=0;
+     var maxusaz=0;
+     var maxusel=0;
 
 
      for (x=st; x<end; x+=deltax ){ ///////////////////////////////////////////////////////
@@ -381,6 +384,8 @@
        else ctx3.strokeStyle = "rgb(00,200,00)";//#00ff00";  
        if (azsp.checked) ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy1*r2g*zoomy3, .5, 0,pi2);
        ctx3.stroke();
+       if (maxspaz<yy1) maxspaz=yy1;
+
 
        ctx3.beginPath();  // el-speed
        if (elsp.checked &(yy2*r2g>25 || yy2*r2g<-25) ) {
@@ -390,6 +395,7 @@
        else ctx3.strokeStyle = "rgb(00,0,255)";//#00ff00";  
        if (elsp.checked)       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yy2*r2g*zoomy3, .5, 0,pi2);
        ctx3.stroke();
+       if (maxspel<yy2) maxspel=yy2;
 
 //////////// acscelleration
 
@@ -404,6 +410,8 @@
        else ctx3.strokeStyle = "rgb(00,200,00)";//#00ff00";  
        if (azus.checked)       ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy1*r2g*zoomy3, 1, 0,pi2);
        ctx3.stroke();
+       if (maxusaz<yyy1) maxusaz=yyy1;
+
 
        ctx3.beginPath();  // el-acs
        if (elus.checked & (yyy2*r2g>25 || yyy2*r2g<-25 )) {
@@ -413,6 +421,7 @@
        else ctx3.strokeStyle = "rgb(00,0,255)";//#00ff00";  
        if (elus.checked) ctx3.arc(x*zoomx1+shiftx, sizey-shifty2-yyy2*r2g*zoomy3, 1, 0,pi2);
        ctx3.stroke();
+       if (maxusel<yyy1) maxusel=yyy1;
 
        az[cntw]=y2;
        el[cntw]=y3;;

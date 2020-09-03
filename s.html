@@ -1,0 +1,278 @@
+<!DOCTYPE HTML>
+<html>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="author" content="denis.kudriakov@gmail.com">
+  <title>Balistica</title>
+  <style>
+    body {font-family: arial;}
+    h1 {font-family: arial; font-size: 14; color: #777777;}
+    input[type=text] {width:40px; border: 2px dotted #999; border-radius: 0; -webkit-appearance: none;}
+    .button1 { position: absolute; left: 812px; top: 10px; }
+    .button2 { position: absolute; left: 812px; top: 1000px; }
+    .graf1{ position: absolute; left: 2px; top:  70px; }
+    .graf2{ position: absolute; left: 2px; top:  3080px;}
+    .graf3{ position: absolute; left: 2px; top:  6090px;}
+    .graf4{ position: absolute; left: 2px; top:  9100px;}
+    .graf5{ position: absolute; left: 2px; top: 12110px;}
+    .mirror5{ position: absolute; left: 2px; top: 12110px;}
+  </style>
+
+<script>
+//denis.kudriakov@gmail.com
+//20.08.20
+////////////////////// global vars
+const h=1788;
+const d=2617; 
+const margins=250;
+const bmax=50;
+var amax=d+margins*2;
+var a=0;          //in line
+var b=150;        //from ine
+const time=38;
+const opt1=time/d;
+const k=d/(2*Math.sqrt(h));
+const r=Math.sqrt(h);
+const r2g=180/Math.PI;     //radian to gradus
+const pi2= 2 * Math.PI;
+const c24=25/r2g;
+
+var maxy=0;
+var x=0.1;
+var y=1.0;
+var y1=.1;
+var y2=.1;
+var y3=0;
+var yy1=.1;
+var yy2=.1;
+var yyy1=.1;
+var yyy2=.1;
+var azsp;
+var azus;
+var elsp;
+var elus;
+el = new  Array();
+az = new  Array();
+var amaxspaz=new Array();
+var amaxspel=new Array();
+var amaxusaz=new Array();
+var amaxusel=new Array();
+
+var camaxspaz=new Array();
+var camaxspel=new Array();
+var camaxusaz=new Array();
+var camaxusel=new Array();
+
+var deltax=1;
+var deltaf1=0.0;
+var deltay1=0.0;
+var deltay2=0.0;
+var deltaaz=0.0;
+var deltael=0.0;
+var maxspaz=0;
+var maxspel=0;
+var maxusaz=0;
+var maxusel=0;
+var cntw=0;
+var tmp=0;
+var ts=new Date();
+var ts1=new Date();
+var ts2=new Date();
+var st=.1;
+var end=2*r*k;
+var deltatime=0;
+var sumtime=0;
+
+
+function pset2(x,y,max,ctx){
+  var tmp=max;
+  if (tmp<0) tmp=0;
+  if (tmp>255) tmp=255;
+  tmp=255-tmp;
+  var colorstring="rgb("+tmp+","+tmp+","+tmp+")";
+  if (max==0) colorstring="rgb(255,255,255)";
+  
+/*
+  else if (max==1)  colorstring="rgb(191,191,255)";
+  else if (max==2)  colorstring="rgb(127,127,255)";
+  else if (max==3)  colorstring="rgb(63,63,255)";
+  else if (max==4)  colorstring="rgb(0,0,255,)";
+  else if (max==5)  colorstring="rgb(0,0,191)";
+  else if (max==6)  colorstring="rgb(0,0,127)";
+  else if (max==7)  colorstring="rgb(0,0,63)";
+  else if (max==8)  colorstring="rgb(0,0,0)";
+  else if (max==9)  colorstring="rgb(63,0,0)";
+  else if (max==10) colorstring="rgb(127,0,0)";
+  else if (max==11) colorstring="rgb(191,0,0)";
+  else if (max==12) colorstring="rgb(255,0,0)";
+  else colorstring="rgb(255,0,0)";
+*/
+  ctx.beginPath();
+  ctx.strokeStyle = colorstring;
+  ctx.arc(x,y, .5, 0,pi2);
+  ctx.stroke();
+  return 0;
+}
+
+function pset(x,y,max,ctx){
+  max=max>>>2;
+  tmpg=Math.round(max)-75;
+  tmp=10*(tmpg+75);
+  if (max>325) tmpg=255;
+  colorstring="rgb(255,255,255)";
+  if (max<1) colorstring="rgb(0,255,0)";
+
+  if (max<25 && max>0)  colorstring="rgb("+tmp+","+tmp+",255)";               //from blue 2 white
+  if (max==25 ) colorstring="rgb(255,255,255)";                               // only white
+  if (max>25  && max<51)  colorstring="rgb(255,"+(512-tmp)+","+(512-tmp)+")"; //from white 2 red
+  if (max>50  && max<76)  colorstring="rgb("+(768-tmp)+",0,0)";               //from red 2 black
+  if (max>75 )  colorstring="rgb(0,"+tmpg+",0)";                              //from black 2 green
+//console.log(max+colorstring);
+  ctx.beginPath();
+  ctx.strokeStyle = colorstring;
+  ctx.arc(x,y, .5, 0,pi2);
+  ctx.stroke();
+  return colorstring;
+}
+
+function f(x){
+  var X= ((x)/k -  r);
+  return (h-(X*X));
+}
+///////////////////////////////////////////
+function grid(ctx){
+  for (x=0;x<amax;x+=100){
+    ctx.beginPath();
+    ctx.strokeStyle = "rgb(200,255,200)";
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,bmax)
+    ctx.stroke();
+  }
+  for (x=0;x<bmax;x+=100){
+    ctx.beginPath();
+    ctx.strokeStyle = "rgb(200,255,200)";
+    ctx.moveTo(0,x);
+    ctx.lineTo(amax,x)
+    ctx.stroke();
+  }
+}
+////////////// //////// ////// //// //// /// // // / /  /
+window.onload = function() {
+  canvas1 = document.getElementById("canvas1");
+  canvas2 = document.getElementById("canvas2");
+  canvas3 = document.getElementById("canvas3");
+  canvas4 = document.getElementById("canvas4");
+  canvas5 = document.getElementById("canvas5");
+  mirror = document.getElementById("mirror");
+  ctx1 = canvas1.getContext("2d");
+  ctx2 = canvas2.getContext("2d");
+  ctx3 = canvas3.getContext("2d");
+  ctx4 = canvas4.getContext("2d");
+  ctx5 = canvas5.getContext("2d");
+  canvas1.width=amax;
+  canvas2.width=amax;
+  canvas3.width=amax;
+  canvas4.width=amax;
+  canvas5.width=amax;
+//  mirror.width=amax;
+//  mirror.addEventListener('contextmenu', function (e) { });
+  ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+  ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+  ctx3.clearRect(0, 0, canvas3.width, canvas3.height);
+  ctx4.clearRect(0, 0, canvas4.width, canvas4.height);
+  ctx4.clearRect(0, 0, canvas5.width, canvas5.height);
+  for (var ia=0; ia<amax; ia++){
+    ts=new Date();
+    a=(margins-ia);
+    for (b=0;b<bmax;b++) { 
+      maxspaz=0;
+      maxspel=0;
+      maxusaz=0;
+      maxusel=0;
+      dmaxspaz=0;
+      dmaxspel=0;
+      dmaxusaz=0;
+      dmaxusel=0;
+      for (x=st; x<end; x+=deltax ){ ///////////////////////////////////////////////////////
+        y=f(x);                     //  ------- mine y1 & y2 - angles az&el in RADIAN
+        deltaf1=y-deltaf1;
+        if (maxy<y) maxy=y;
+        if (b) {
+          if (a<0){
+            if (x>-a)  y1=Math.atan2(-a-x,b);            //az angle
+            else y1=Math.atan2(x+a,b);
+          }
+          else y1=Math.atan2(x+a,b)-Math.atan2(a,b);    //az else
+        }
+        else y1=0; //azimuth
+        y2=Math.atan2(y,Math.sqrt((x+a)*(x+a)+b*b));    //elevation angle
+        deltay1=y1-deltay1;
+        deltay2=y2-deltay2;                             //delta f on this iteration
+/////////////////// ang-speed
+        yy1=deltay1/opt1;                //mine yy1 & yy2 - angle speed
+        yy2=deltay2/opt1;                //
+        deltaaz=yy1-deltaaz;                           //delta f on this iteration
+        deltael=yy2-deltael;
+//////////// acscelleration
+        yyy1=Math.abs(deltaaz/opt1);
+        yyy2=Math.abs(deltael/opt1);
+
+        if (maxspaz<yy1) maxspaz=yy1;                  //find MAX azim
+        if (maxspel<yy2) maxspel=yy2;
+
+        if (maxusaz<yyy1) maxusaz=yyy1;
+        if (maxusel<yyy2) maxusel=yyy2;
+
+        if (yy1>c24)  dmaxspaz++;
+        if (yy2>c24)  dmaxspel++;
+
+        if (yyy1>c24) dmaxusaz++;
+        if (yyy2>c24) dmaxusel++;
+
+        deltaf1=y;
+        deltay1=y1;
+        deltay2=y2;
+        deltaaz=yy1;
+        deltael=yy2;
+      } // end for --maxminer
+       pset(ia,b,maxspaz,ctx1);
+       pset(ia,b,maxspel,ctx2);
+       pset(ia,b,maxusaz,ctx3);
+       pset(ia,b,maxusel,ctx4);
+      pset2(ia,b,(dmaxusel+dmaxusaz+dmaxspel+dmaxspaz),ctx5);
+
+    } //for b
+    ts2=new Date();
+    deltatime=(ts2-ts);
+    sumtime+=deltatime;
+    cp=Math.round(ia/amax*100);
+    ccp=ia/amax*100;
+    console.log(cp +"%");
+    csec=(sumtime/(ccp)*100-sumtime)/1000
+    cmin=Math.trunc(csec/60);
+    console.log("to end :"+cmin+"min"+Math.round(csec)%60+"sec");
+  } //for a & b
+  grid(ctx1);
+  grid(ctx2);
+  grid(ctx3);
+  grid(ctx4);
+  grid(ctx5);
+}//windoow onload
+ts2=new Date();
+console.log(ts1);
+console.log(ts2);
+console.log(ts2-ts1);
+</script> 
+
+ </head>
+ <body>
+  <h1>BALISTA:</h1>                
+  <canvas id='canvas1' width='800' height='3000' class='graf1'><p>Unsuported browser</p></canvas>
+  <canvas id='canvas2' width='800' height='3000' class='graf2'><p>Unsuported browser</p></canvas>
+  <canvas id='canvas3' width='800' height='3000' class='graf3'><p>Unsuported browser</p></canvas>
+  <canvas id='canvas4' width='800' height='3000' class='graf4'><p>Unsuported browser</p></canvas>
+  <canvas id='canvas5' width='800' height='3000' class='graf5'><p>Unsuported browser</p></canvas>
+//  <img src="" id="mirror5" class="mirror5" />
+ </body>
+</html>
+
