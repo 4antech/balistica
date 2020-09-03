@@ -5,27 +5,29 @@
   <meta name="author" content="denis.kudriakov@gmail.com">
   <title>Balistica</title>
   <style>
-    body {font-family: arial;}
+    body {font-family: arial;  background-color: #f0f0f0;}
     h1 {font-family: arial; font-size: 14; color: #777777;}
     input[type=text] {width:40px; border: 2px dotted #999; border-radius: 0; -webkit-appearance: none;}
-    .button1 { position: absolute; left: 812px; top: 10px; }
+    .button1 { position: absolute; left: 200px; top: 5px; }
     .button2 { position: absolute; left: 812px; top: 1000px; }
-    .graf1{ position: absolute; left: 2px; top:  70px; }
-    .graf2{ position: absolute; left: 2px; top:  3080px;}
-    .graf3{ position: absolute; left: 2px; top:  6090px;}
-    .graf4{ position: absolute; left: 2px; top:  9100px;}
-    .graf5{ position: absolute; left: 2px; top: 12110px;}
+    .graf1{ position: absolute; left: 2px; top:  70px  ; background-color: #ffffff;}
+    .graf2{ position: absolute; left: 2px; top:  3080px; background-color: #ffffff;}
+    .graf3{ position: absolute; left: 2px; top:  6090px; background-color: #ffffff;}
+    .graf4{ position: absolute; left: 2px; top:  9100px; background-color: #ffffff;}
+    .graf5{ position: absolute; left: 2px; top: 12110px; background-color: #ffffff;}
     .mirror5{ position: absolute; left: 2px; top: 12110px;}
+    .afterstart {position: absolute; right: 10px; top: 10px; width: 150px; background-color: #eeeeee;}
+    .beforestart {position: absolute; right: 10px; top: 10px; width: 0px; background-color: #eeeeee;}
   </style>
 
 <script>
 //denis.kudriakov@gmail.com
-//20.08.20
+//2.09.20
 ////////////////////// global vars
 const h=1788;
 const d=2617; 
-const margins=250;
-const bmax=50;
+var margins=2000;
+var bmax=3000;
 var amax=d+margins*2;
 var a=0;          //in line
 var b=150;        //from ine
@@ -143,7 +145,7 @@ function f(x){
 function grid(ctx){
   for (x=0;x<amax;x+=100){
     ctx.beginPath();
-    ctx.strokeStyle = "rgb(200,255,200)";
+    ctx.strokeStyle = "rgb(00,255,00)";
     ctx.moveTo(x,0);
     ctx.lineTo(x,bmax)
     ctx.stroke();
@@ -156,34 +158,14 @@ function grid(ctx){
     ctx.stroke();
   }
 }
-////////////// //////// ////// //// //// /// // // / /  /
-window.onload = function() {
-  canvas1 = document.getElementById("canvas1");
-  canvas2 = document.getElementById("canvas2");
-  canvas3 = document.getElementById("canvas3");
-  canvas4 = document.getElementById("canvas4");
-  canvas5 = document.getElementById("canvas5");
-  mirror = document.getElementById("mirror");
-  ctx1 = canvas1.getContext("2d");
-  ctx2 = canvas2.getContext("2d");
-  ctx3 = canvas3.getContext("2d");
-  ctx4 = canvas4.getContext("2d");
-  ctx5 = canvas5.getContext("2d");
-  canvas1.width=amax;
-  canvas2.width=amax;
-  canvas3.width=amax;
-  canvas4.width=amax;
-  canvas5.width=amax;
-//  mirror.width=amax;
-//  mirror.addEventListener('contextmenu', function (e) { });
-  ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
-  ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
-  ctx3.clearRect(0, 0, canvas3.width, canvas3.height);
-  ctx4.clearRect(0, 0, canvas4.width, canvas4.height);
-  ctx4.clearRect(0, 0, canvas5.width, canvas5.height);
+
+//////////////
+function genout(){
+  if (deep.value || marginlr.value) {margins=marginlr.value; bmax=deep.value;}
   for (var ia=0; ia<amax; ia++){
     ts=new Date();
     a=(margins-ia);
+    absa=Math.abs(a);
     for (b=0;b<bmax;b++) { 
       maxspaz=0;
       maxspel=0;
@@ -197,15 +179,33 @@ window.onload = function() {
         y=f(x);                     //  ------- mine y1 & y2 - angles az&el in RADIAN
         deltaf1=y-deltaf1;
         if (maxy<y) maxy=y;
+//////////////
+////
+//        if (b) {
+//          if (a<0){
+//            if (x>-a)  y1=Math.atan2(-a-x,b);            //az angle
+//            else y1=Math.atan2(x+a,b);
+//          }
+//          else y1=Math.atan2(x+a,b)-Math.atan2(a,b);    //az else
+//        }
+//        else y1=0; //azimuth
+//
+/////////////
         if (b) {
-          if (a<0){
-            if (x>-a)  y1=Math.atan2(-a-x,b);            //az angle
-            else y1=Math.atan2(x+a,b);
+          atanAB=Math.atan2(absa,b);
+          if (a==0)     y1=Math.atan2(x,b);
+          else if (a<0){
+            if (x<absa) y1=atanAB - Math.atan2(absa-x,b);
+            else        y1=atanAB + Math.atan2(x-absa,b);
           }
-          else y1=Math.atan2(x+a,b)-Math.atan2(a,b);    //az else
+          else          y1=Math.atan2(x+absa,b)-atanAB; //
         }
-        else y1=0; //azimuth
-        y2=Math.atan2(y,Math.sqrt((x+a)*(x+a)+b*b));    //elevation angle
+        else {
+          if (x<absa) y1=0; //azimuth
+          else  y1=pi2;
+        }
+        y2=Math.atan2(y,Math.sqrt((x+absa)*(x+absa)+b*b));    //elevation angle
+
         deltay1=y1-deltay1;
         deltay2=y2-deltay2;                             //delta f on this iteration
 /////////////////// ang-speed
@@ -235,12 +235,11 @@ window.onload = function() {
         deltaaz=yy1;
         deltael=yy2;
       } // end for --maxminer
-       pset(ia,b,maxspaz,ctx1);
-       pset(ia,b,maxspel,ctx2);
-       pset(ia,b,maxusaz,ctx3);
-       pset(ia,b,maxusel,ctx4);
+      pset(ia,b,maxspaz,ctx1);
+      pset(ia,b,maxspel,ctx2);
+      pset(ia,b,maxusaz,ctx3);
+      pset(ia,b,maxusel,ctx4);
       pset2(ia,b,(dmaxusel+dmaxusaz+dmaxspel+dmaxspaz),ctx5);
-
     } //for b
     ts2=new Date();
     deltatime=(ts2-ts);
@@ -250,8 +249,38 @@ window.onload = function() {
     console.log(cp +"%");
     csec=(sumtime/(ccp)*100-sumtime)/1000
     cmin=Math.trunc(csec/60);
-    console.log("to end :"+cmin+"min"+Math.round(csec)%60+"sec");
+    if (cmin) console.log("to end :"+cmin+"min"+Math.round(csec)%60+"sec");
+    else console.log("to end :"+Math.round(csec)%60+"sec");
   } //for a & b
+} //end function
+////////////// //////// ////// //// //// /// // // / /  /
+window.onload = function() {
+  canvas1 = document.getElementById("canvas1");
+  canvas2 = document.getElementById("canvas2");
+  canvas3 = document.getElementById("canvas3");
+  canvas4 = document.getElementById("canvas4");
+  canvas5 = document.getElementById("canvas5");
+  marginlr = document.getElementById("marginlr");
+  deep = document.getElementById("deep");
+  timer = document.getElementById("timer");
+  timer.innerHTML=("");
+  ctx1 = canvas1.getContext("2d");
+  ctx2 = canvas2.getContext("2d");
+  ctx3 = canvas3.getContext("2d");
+  ctx4 = canvas4.getContext("2d");
+  ctx5 = canvas5.getContext("2d");
+  canvas1.width=amax;
+  canvas2.width=amax;
+  canvas3.width=amax;
+  canvas4.width=amax;
+  canvas5.width=amax;
+//  mirror.width=amax;
+//  mirror.addEventListener('contextmenu', function (e) { });
+  ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+  ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+  ctx3.clearRect(0, 0, canvas3.width, canvas3.height);
+  ctx4.clearRect(0, 0, canvas4.width, canvas4.height);
+  ctx4.clearRect(0, 0, canvas5.width, canvas5.height);
   grid(ctx1);
   grid(ctx2);
   grid(ctx3);
@@ -263,16 +292,23 @@ console.log(ts1);
 console.log(ts2);
 console.log(ts2-ts1);
 </script> 
-
  </head>
  <body>
-  <h1>BALISTA:</h1>                
+  <h1>BALISTA:</h1>
+  <div class=button1>
+    <input type=text id=marginlr>margin(LR) </>
+    <input type=text id=deep>deep</>
+    <input type=text id=top>top</>
+    <input type=text id=width>width</>
+    <button onclick='genout();'>start</button>
+  </div>
+  <div id=timer class=afterstart></div>
   <canvas id='canvas1' width='800' height='3000' class='graf1'><p>Unsuported browser</p></canvas>
   <canvas id='canvas2' width='800' height='3000' class='graf2'><p>Unsuported browser</p></canvas>
   <canvas id='canvas3' width='800' height='3000' class='graf3'><p>Unsuported browser</p></canvas>
   <canvas id='canvas4' width='800' height='3000' class='graf4'><p>Unsuported browser</p></canvas>
   <canvas id='canvas5' width='800' height='3000' class='graf5'><p>Unsuported browser</p></canvas>
-//  <img src="" id="mirror5" class="mirror5" />
+<!--  <img src="" id="mirror5" class="mirror5" /> -->
  </body>
 </html>
 

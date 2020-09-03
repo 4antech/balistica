@@ -334,13 +334,14 @@
        if (maxy<y) maxy=y;
        if (b) {
          if (a<0){
-          if (x>a)  y1=Math.atan2(-a-x,b);
-          else y1=Math.atan2(x+a,b);
+           if (x<(-a)) y1=Math.atan2(-a,b) - Math.atan2(-a-x,b);
+           else  y1=Math.atan2(-a,b) + Math.atan2(x-(-a),b);
          }
-         else y1=Math.atan2(x+a,b)-Math.atan2(a,b); 
+         else y1=Math.atan2(x+a,b)-Math.atan2(a,b); //
        }
        else y1=0; //azimuth
-       y2=Math.atan2(y,Math.sqrt((x+a)*(x+a)+b*b)); //elevation angle
+
+       y2=Math.atan2(y,Math.sqrt((x+Math.abs(a))*(x+Math.abs(a))+b*b)); //elevation angle
        deltay1=y1-deltay1;
        deltay2=y2-deltay2;
 
