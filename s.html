@@ -26,8 +26,8 @@
 ////////////////////// global vars
 const h=1788;
 const d=2617; 
-var margins=2000;
-var bmax=3000;
+var margins=30;
+var bmax=30;
 var amax=d+margins*2;
 var a=0;          //in line
 var b=150;        //from ine
@@ -117,7 +117,7 @@ function pset2(x,y,max,ctx){
 }
 
 function pset(x,y,max,ctx){
-  max=max>>>2;
+//  max=max>>>2;
   tmpg=Math.round(max)-75;
   tmp=10*(tmpg+75);
   if (max>325) tmpg=255;
@@ -200,10 +200,12 @@ function genout(){
           }
           else          y1=Math.atan2(x+absa,b)-atanAB; //
         }
+
         else {
           if (x<absa) y1=0; //azimuth
           else  y1=pi2;
         }
+
         y2=Math.atan2(y,Math.sqrt((x+absa)*(x+absa)+b*b));    //elevation angle
 
         deltay1=y1-deltay1;
@@ -235,10 +237,10 @@ function genout(){
         deltaaz=yy1;
         deltael=yy2;
       } // end for --maxminer
-      pset(ia,b,maxspaz,ctx1);
-      pset(ia,b,maxspel,ctx2);
-      pset(ia,b,maxusaz,ctx3);
-      pset(ia,b,maxusel,ctx4);
+      pset(ia,b,r2g*maxspaz,ctx1);
+      pset(ia,b,r2g*maxspel,ctx2);
+      pset(ia,b,r2g*maxusaz,ctx3);
+      pset(ia,b,r2g*maxusel,ctx4);
       pset2(ia,b,(dmaxusel+dmaxusaz+dmaxspel+dmaxspaz),ctx5);
     } //for b
     ts2=new Date();
@@ -252,6 +254,12 @@ function genout(){
     if (cmin) console.log("to end :"+cmin+"min"+Math.round(csec)%60+"sec");
     else console.log("to end :"+Math.round(csec)%60+"sec");
   } //for a & b
+  grid(ctx1);
+  grid(ctx2);
+  grid(ctx3);
+  grid(ctx4);
+  grid(ctx5);
+
 } //end function
 ////////////// //////// ////// //// //// /// // // / /  /
 window.onload = function() {
