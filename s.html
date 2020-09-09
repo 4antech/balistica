@@ -37,6 +37,8 @@ const k=d/(2*Math.sqrt(h));
 const r=Math.sqrt(h);
 const r2g=180/Math.PI;     //radian to gradus
 const pi2= 2 * Math.PI;
+const pi= Math.PI;
+const pina2= Math.PI/2;
 const c24=25/r2g;
 
 var maxy=0;
@@ -85,7 +87,6 @@ var end=2*r*k;
 var deltatime=0;
 var sumtime=0;
 
-
 function pset2(x,y,max,ctx){
   var tmp=max;
   if (tmp<0) tmp=0;
@@ -93,22 +94,6 @@ function pset2(x,y,max,ctx){
   tmp=255-tmp;
   var colorstring="rgb("+tmp+","+tmp+","+tmp+")";
   if (max==0) colorstring="rgb(255,255,255)";
-  
-/*
-  else if (max==1)  colorstring="rgb(191,191,255)";
-  else if (max==2)  colorstring="rgb(127,127,255)";
-  else if (max==3)  colorstring="rgb(63,63,255)";
-  else if (max==4)  colorstring="rgb(0,0,255,)";
-  else if (max==5)  colorstring="rgb(0,0,191)";
-  else if (max==6)  colorstring="rgb(0,0,127)";
-  else if (max==7)  colorstring="rgb(0,0,63)";
-  else if (max==8)  colorstring="rgb(0,0,0)";
-  else if (max==9)  colorstring="rgb(63,0,0)";
-  else if (max==10) colorstring="rgb(127,0,0)";
-  else if (max==11) colorstring="rgb(191,0,0)";
-  else if (max==12) colorstring="rgb(255,0,0)";
-  else colorstring="rgb(255,0,0)";
-*/
   ctx.beginPath();
   ctx.strokeStyle = colorstring;
   ctx.arc(x,y, .5, 0,pi2);
@@ -117,13 +102,11 @@ function pset2(x,y,max,ctx){
 }
 
 function pset(x,y,max,ctx){
-//  max=max>>>2;
   tmpg=Math.round(max)-75;
   tmp=10*(tmpg+75);
   if (max>325) tmpg=255;
   colorstring="rgb(255,255,255)";
   if (max<1) colorstring="rgb(0,255,0)";
-
   if (max<25 && max>0)  colorstring="rgb("+tmp+","+tmp+",255)";               //from blue 2 white
   if (max==25 ) colorstring="rgb(255,255,255)";                               // only white
   if (max>25  && max<51)  colorstring="rgb(255,"+(512-tmp)+","+(512-tmp)+")"; //from white 2 red
@@ -162,9 +145,16 @@ function grid(ctx){
 //////////////
 function genout(){
   if (deep.value || marginlr.value) {margins=marginlr.value; bmax=deep.value;}
+  amax=d+margins*2;
+  canvas1.width=amax;
+  canvas2.width=amax;
+  canvas3.width=amax;
+  canvas4.width=amax;
+  canvas5.width=amax;
+
   for (var ia=0; ia<amax; ia++){
     ts=new Date();
-    a=(margins-ia);
+    a=(ia-margins);
     absa=Math.abs(a);
     for (b=0;b<bmax;b++) { 
       maxspaz=0;
@@ -179,57 +169,61 @@ function genout(){
         y=f(x);                     //  ------- mine y1 & y2 - angles az&el in RADIAN
         deltaf1=y-deltaf1;
         if (maxy<y) maxy=y;
-//////////////
-////
-//        if (b) {
-//          if (a<0){
-//            if (x>-a)  y1=Math.atan2(-a-x,b);            //az angle
-//            else y1=Math.atan2(x+a,b);
-//          }
-//          else y1=Math.atan2(x+a,b)-Math.atan2(a,b);    //az else
-//        }
-//        else y1=0; //azimuth
-//
-/////////////
+
         if (b) {
           atanAB=Math.atan2(absa,b);
-          if (a==0)     y1=Math.atan2(x,b);
-          else if (a<0){
-            if (x<absa) y1=atanAB - Math.atan2(absa-x,b);
-            else        y1=atanAB + Math.atan2(x-absa,b);
+          if (a<0) {
+            y1=Math.atan2(x+absa,b)-atanAB;  //az
+            y2=Math.atan2(y,b/Math.cos(y1)); //EL 
           }
-          else          y1=Math.atan2(x+absa,b)-atanAB; //
+          else if (a==0) {
+            y1=Math.atan2(x,b);
+            y2=Math.atan2(y,b);
+          }
+          else if (a>0){
+            if (x==absa) {
+              y1=atanAB;
+              y2=Math.atan2(y,b); //EL 
+            }
+            else if (x<a) {
+              y1=atanAB - Math.atan2(absa-x,b);
+              y2=Math.atan2(y,b/Math.cos(y1)); //EL 
+            }
+            else if (x>a) {
+              y1=atanAB + Math.atan2(x-absa,b);
+              y2=Math.atan2(y,b/Math.cos(y1)); //EL 
+            }
+          }
         }
-
-        else {
-          if (x<absa) y1=0; //azimuth
-          else  y1=pi2;
+        else {                                    // if b==0
+          if (x<absa) y1=0; else y1=pi;           //azimuth
+          if (a<0) y2=Math.atan2(y,x+absa);       //elevation
+          else if (a==0) y2=Math.atan2(y,x);      //elevation
+          else if (a>0) {                         // if a>0
+           if (x<a) y2=Math.atan2(y,absa-x);      //elevation
+           else if (x==a) y2=pina2;               //elevation
+           else if (x>a) y2=Math.atan2(y,x-absa); //elevation
+          }
         }
-
-        y2=Math.atan2(y,Math.sqrt((x+absa)*(x+absa)+b*b));    //elevation angle
-
         deltay1=y1-deltay1;
-        deltay2=y2-deltay2;                             //delta f on this iteration
+        deltay2=y2-deltay2;                       //delta f on this iteration
 /////////////////// ang-speed
-        yy1=deltay1/opt1;                //mine yy1 & yy2 - angle speed
-        yy2=deltay2/opt1;                //
-        deltaaz=yy1-deltaaz;                           //delta f on this iteration
+        yy1=deltay1/opt1;                         //mine yy1 & yy2 - angle speed
+        yy2=deltay2/opt1;                         //
+        deltaaz=yy1-deltaaz;                      //delta f on this iteration
         deltael=yy2-deltael;
 //////////// acscelleration
         yyy1=Math.abs(deltaaz/opt1);
         yyy2=Math.abs(deltael/opt1);
 
-        if (maxspaz<yy1) maxspaz=yy1;                  //find MAX azim
+        if (maxspaz<yy1) maxspaz=yy1;             //find MAX azim
         if (maxspel<yy2) maxspel=yy2;
-
         if (maxusaz<yyy1) maxusaz=yyy1;
         if (maxusel<yyy2) maxusel=yyy2;
-
         if (yy1>c24)  dmaxspaz++;
         if (yy2>c24)  dmaxspel++;
-
-        if (yyy1>c24) dmaxusaz++;
-        if (yyy2>c24) dmaxusel++;
+        if (yyy1>25) dmaxusaz++;
+        if (yyy2>25) dmaxusel++;
 
         deltaf1=y;
         deltay1=y1;
@@ -237,10 +231,11 @@ function genout(){
         deltaaz=yy1;
         deltael=yy2;
       } // end for --maxminer
+
       pset(ia,b,r2g*maxspaz,ctx1);
       pset(ia,b,r2g*maxspel,ctx2);
-      pset(ia,b,r2g*maxusaz,ctx3);
-      pset(ia,b,r2g*maxusel,ctx4);
+      pset(ia,b,maxusaz,ctx3);
+      pset(ia,b,maxusel,ctx4);
       pset2(ia,b,(dmaxusel+dmaxusaz+dmaxspel+dmaxspaz),ctx5);
     } //for b
     ts2=new Date();
@@ -259,6 +254,8 @@ function genout(){
   grid(ctx3);
   grid(ctx4);
   grid(ctx5);
+console.log(amax);
+console.log(canvas1.width);
 
 } //end function
 ////////////// //////// ////// //// //// /// // // / /  /
